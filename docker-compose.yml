@@ -1,8 +1,9 @@
 version: '3'
 services:
-  smartctl-metrics:
-    build: ./
-    restart: unless-stopped
+  prometheus_smartctl-exporter:
+    image: vaa12345/prometheus-smartctl:latest
+    container_name: prometheus_smartctl-exporter
     privileged: true
     ports:
-      - 9902:9902
+      - "9902:9902"
+    restart: unless-stopped

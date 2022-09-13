@@ -1,0 +1,12 @@
+smartctl_exporter:
+  devices:
+    - /dev/sda: sat
+    - /dev/sdb: sat
+    - /dev/sdc: sat
+    - /dev/sde: sat
+    - /dev/sdf: sat
+    - /dev/sdg: sat
+    - /dev/sdh: sat
+    - /dev/sdi: sat
+    - /dev/bus/0: megaraid,14
+    - /dev/bus/0: megaraid,15

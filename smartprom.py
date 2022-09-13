@@ -1,15 +1,15 @@
-#!/usr/bin/env python3
 import json
 import os
+from os.path import exists
 import subprocess
 import time
-
+from unittest import result
 import prometheus_client
+import yaml
 
-DRIVES = {}
+DATA = {}
 METRICS = {}
-LABELS = ['drive', 'type', 'model_family', 'model_name', 'serial_number']
-
+LABELS = ['drive', 'type', 'model_name', 'serial_number']
 
 def run_smartctl_cmd(args: list):
     """
@@ -26,37 +26,43 @@ def run_smartctl_cmd(args: list):
     return stdout.decode("utf-8")
 
 
-def get_drives() -> dict:
-    """
-    Returns a dictionary of devices and its types
-    """
+def get_devices_data(devices):
+
     disks = {}
-    result = run_smartctl_cmd(['smartctl', '--scan-open', '--json=c'])
-    result_json = json.loads(result)
-    if 'devices' in result_json:
-        devices = result_json['devices']
-        for device in devices:
-            dev = device["name"]
-            disk_attrs = get_device_info(dev)
-            disk_attrs["type"] = device["type"]
-            disks[dev] = disk_attrs
-            print("Discovered device", dev, "with attributes", disk_attrs)
-    else:
-        print("No devices found. Make sure you have enough privileges.")
+
+    for device in devices:
+
+        disk_name, disk_type = list(device.items())[0]
+
+        disk_attrs = get_device_info(disk_name, disk_type)
+        disk_attrs["name"] = disk_name
+        disk_attrs["type"] = disk_type
+
+        disk_id = disk_name + '_' + disk_type
+        disks[disk_id] = disk_attrs
+    
     return disks
 
 
-def get_device_info(dev: str) -> dict:
+def get_device_info(dev: str, type: str) -> dict:
     """
     Returns a dictionary of device info
     """
-    results = run_smartctl_cmd(['smartctl', '-i', '--json=c', dev])
+    results = run_smartctl_cmd(['smartctl', '-d', type, '-i', dev, '--json=c'])
     results = json.loads(results)
-    return {
-        'model_family': results.get("model_family", "Unknown"),
-        'model_name': results.get("model_name", "Unknown"),
-        'serial_number': results.get("serial_number", "Unknown")
-    }
+
+    if type.startswith('megaraid'):
+        results = {
+            'model_name': results.get("scsi_model_name", "Unknown"),
+            'serial_number': results.get("serial_number", "Unknown")
+        }
+    else:
+        results = {
+            'model_name': results.get("model_name", "Unknown"),
+            'serial_number': results.get("serial_number", "Unknown")
+        }
+
+    return results
 
 
 def get_smart_status(results: dict) -> int:
@@ -148,24 +154,55 @@ def smart_scsi(dev: str) -> dict:
     return attributes
 
 
+def smart_megaraid(drive_id):
+
+    dev, type = drive_id.split('_')
+    results = run_smartctl_cmd(['smartctl', '-A', '-H', '-d', type, '--json=c', dev])
+    results = yaml.load(results, Loader=yaml.Loader)
+
+    attributes = {
+        'smart_passed': get_smart_status(results)
+    }
+
+    # remove unnecessary data
+    del results['json_format_version']
+    del results['smartctl']
+    del results['local_time']
+
+    for key in results:
+    
+        if isinstance(results[key], dict):
+            for _label, _value in results[key].items():
+                if isinstance(_value, int):
+                    attributes[f"{key}_{_label}"] = _value
+        elif isinstance(results[key], int):
+            attributes[key] = results[key]
+
+    return attributes
+
+
 def collect():
     """
     Collect all drive metrics and save them as Gauge type
     """
-    global DRIVES, METRICS, LABELS
+    global DATA, METRICS, LABELS
 
-    for drive, drive_attrs in DRIVES.items():
+    for drive_id, drive_attrs in DATA.items():
+
         typ = drive_attrs['type']
+        
+        if typ == 'sat':
+            attrs = smart_sat(drive_attrs['name'])
+        elif typ == 'nvme':
+            attrs = smart_nvme(drive_attrs['name'])
+        elif typ == 'scsi':
+            attrs = smart_scsi(drive_attrs['name'])
+        elif typ.startswith('megaraid'):
+            attrs = smart_megaraid(drive_id)
+        else:
+            continue
+        
         try:
-            if typ == 'sat':
-                attrs = smart_sat(drive)
-            elif typ == 'nvme':
-                attrs = smart_nvme(drive)
-            elif typ == 'scsi':
-                attrs = smart_scsi(drive)
-            else:
-                continue
-
             for key, values in attrs.items():
                 # Metric name in lower case
                 metric = 'smartprom_' + key.replace('-', '_').replace(' ', '_').replace('.', '').replace('/', '_') \
@@ -175,19 +212,20 @@ def collect():
                 if metric not in METRICS:
                     desc = key.replace('_', ' ')
                     code = hex(values[0]) if typ == 'sat' else hex(values)
-                    print(f'Adding new gauge {metric} ({code})')
+                    print(f'{drive_id} Adding new gauge {metric} ({code})')
                     METRICS[metric] = prometheus_client.Gauge(metric, f'({code}) {desc}', LABELS)
 
                 # Update metric
                 metric_val = values[1] if typ == 'sat' else values
 
-                METRICS[metric].labels(drive=drive,
-                                       type=typ,
-                                       model_family=drive_attrs['model_family'],
-                                       model_name=drive_attrs['model_name'],
-                                       serial_number=drive_attrs['serial_number']).set(metric_val)
+                METRICS[metric].labels(drive=drive_id,
+                                    type=typ,
+                                    #    model_family=drive_attrs['model_family'],
+                                    model_name=drive_attrs['model_name'],
+                                    serial_number=drive_attrs['serial_number']).set(metric_val)
 
         except Exception as e:
+            print('Drive id: ', drive_id)
             print('Exception:', e)
             pass
 
@@ -196,15 +234,25 @@ def main():
     """
     Starts a server and exposes the metrics
     """
-    global DRIVES
+    global DATA
 
     # Validate configuration
     exporter_address = os.environ.get("SMARTCTL_EXPORTER_ADDRESS", "0.0.0.0")
     exporter_port = int(os.environ.get("SMARTCTL_EXPORTER_PORT", 9902))
     refresh_interval = int(os.environ.get("SMARTCTL_REFRESH_INTERVAL", 60))
+    config_file = os.environ.get("SMARTCTL_CONFIG_FILE", "/etc/smartprom/smartprom.yaml")
 
-    # Get drives (test smartctl)
-    DRIVES = get_drives()
+    if not os.path.isfile(config_file):
+        err_msg = f'{config_file} not exist'
+        print(err_msg)
+        raise OSError(err_msg)
+
+    # parse config
+    with open(config_file) as f:
+        config = yaml.safe_load(f)
+        devices = config['smartctl_exporter']['devices']
+
+    DATA = get_devices_data(devices)
 
     # Start Prometheus server
     prometheus_client.start_http_server(exporter_port, exporter_address)
@@ -216,4 +264,5 @@ def main():
 
 
 if __name__ == '__main__':
+
     main()

@@ -178,6 +178,11 @@ def smart_megaraid(drive_id):
         elif isinstance(results[key], int):
             attributes[key] = results[key]
 
+    # rename some attributes for sata disk compatibility
+    attributes['temperature_celsius_raw'] = attributes.pop('temperature_current')
+    attributes['power_cycle_count_raw'] = attributes.pop('scsi_start_stop_cycle_counter_accumulated_start_stop_cycles')
+    attributes['power_on_hours_raw'] = attributes.pop('power_on_time_hours')
+
     return attributes
 
 

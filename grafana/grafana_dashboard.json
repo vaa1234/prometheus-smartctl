@@ -26,7 +26,7 @@
   "fiscalYearStartMonth": 0,
   "gnetId": 9846,
   "graphTooltip": 0,
-  "id": 42,
+  "id": 20,
   "links": [
     {
       "icon": "external link",
@@ -41,7 +41,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "fmMKqssGk"
+        "uid": "37ehD1i4z"
       },
       "description": "",
       "fieldConfig": {
@@ -134,7 +134,7 @@
           }
         ]
       },
-      "pluginVersion": "9.0.0",
+      "pluginVersion": "9.0.7",
       "targets": [
         {
           "datasource": {
@@ -142,7 +142,7 @@
             "uid": "fmMKqssGk"
           },
           "exemplar": true,
-          "expr": "smartprom_smart_passed",
+          "expr": "smartprom_smart_passed{job=\"smartctl\"}",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -267,7 +267,293 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "fmMKqssGk"
+        "uid": "37ehD1i4z"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto",
+            "filterable": false,
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "#EAB839",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 2
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*_.*"
+            },
+            "properties": [
+              {
+                "id": "custom.displayMode",
+                "value": "color-background"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "instance"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 203
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "drive"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 196
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "scsi_grown_defect_list"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 213
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_read_uncorrected_errors"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 214
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_write_uncorrected_errors"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 217
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
+      "id": 27,
+      "links": [],
+      "maxDataPoints": 100,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "frameIndex": 1,
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "instance"
+          }
+        ]
+      },
+      "pluginVersion": "9.0.7",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "37ehD1i4z"
+          },
+          "exemplar": true,
+          "expr": "smartprom_scsi_grown_defect_list{job=\"smartctl\"}",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "37ehD1i4z"
+          },
+          "exemplar": true,
+          "expr": "smartprom_scsi_error_counter_log_read_total_uncorrected_errors{job=\"smartctl\"}",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "37ehD1i4z"
+          },
+          "exemplar": true,
+          "expr": "smartprom_scsi_error_counter_log_write_total_uncorrected_errors{job=\"smartctl\"}",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "",
+          "refId": "C"
+        }
+      ],
+      "title": "SAS Error Metrics",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "Value": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              },
+              "Value #A": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              },
+              "Value #B": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              },
+              "Value #C": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              },
+              "Value #D": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              },
+              "Value #E": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              },
+              "drive": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "instance": {
+                "aggregations": [],
+                "operation": "groupby"
+              }
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": false,
+              "backup_id": true,
+              "backup_type": true,
+              "client_hostname": false,
+              "client_id": true,
+              "client_os_version": true,
+              "client_username": true,
+              "client_version": true,
+              "instance": false,
+              "job": true,
+              "snapshot_id": true
+            },
+            "indexByName": {
+              "Time": 0,
+              "Value #A": 5,
+              "Value #B": 6,
+              "__name__": 1,
+              "drive": 3,
+              "instance": 2,
+              "job": 4
+            },
+            "renameByName": {
+              "Value": "",
+              "Value #A": "reallocated_sector_ct",
+              "Value #A (sum)": "scsi_grown_defect_list",
+              "Value #B": "reported_uncorrect",
+              "Value #B (sum)": "total_read_uncorrected_errors",
+              "Value #C (sum)": "total_write_uncorrected_errors",
+              "Value #D (sum)": "current_pending_sector",
+              "Value #E (sum)": "offline_uncorrectable",
+              "Value (sum)": "scsi_grown_defect_list",
+              "job": ""
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "37ehD1i4z"
       },
       "description": "",
       "fieldConfig": {
@@ -320,9 +606,9 @@
         "h": 7,
         "w": 24,
         "x": 0,
-        "y": 7
+        "y": 12
       },
-      "id": 27,
+      "id": 39,
       "links": [],
       "maxDataPoints": 100,
       "options": {
@@ -342,11 +628,15 @@
           }
         ]
       },
-      "pluginVersion": "9.0.0",
+      "pluginVersion": "9.0.7",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "37ehD1i4z"
+          },
           "exemplar": true,
-          "expr": "smartprom_reallocated_sector_ct_raw",
+          "expr": "smartprom_reallocated_sector_ct_raw{job=\"smartctl\"}",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -356,8 +646,12 @@
           "refId": "A"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "37ehD1i4z"
+          },
           "exemplar": true,
-          "expr": "smartprom_reported_uncorrect_raw",
+          "expr": "smartprom_reported_uncorrect_raw{job=\"smartctl\"}",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -367,8 +661,12 @@
           "refId": "B"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "37ehD1i4z"
+          },
           "exemplar": true,
-          "expr": "smartprom_command_timeout_raw",
+          "expr": "smartprom_command_timeout_raw{job=\"smartctl\"}",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -378,8 +676,12 @@
           "refId": "C"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "37ehD1i4z"
+          },
           "exemplar": true,
-          "expr": "smartprom_current_pending_sector_raw",
+          "expr": "smartprom_current_pending_sector_raw{job=\"smartctl\"}",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -389,8 +691,12 @@
           "refId": "D"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "37ehD1i4z"
+          },
           "exemplar": true,
-          "expr": "smartprom_offline_uncorrectable_raw",
+          "expr": "smartprom_offline_uncorrectable_raw{job=\"smartctl\"}",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -400,7 +706,7 @@
           "refId": "E"
         }
       ],
-      "title": "Error Metrics",
+      "title": "Sata Error Metrics",
       "transformations": [
         {
           "id": "merge",
@@ -496,7 +802,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "fmMKqssGk"
+        "uid": "37ehD1i4z"
       },
       "description": "",
       "fieldConfig": {
@@ -515,8 +821,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "#EAB839",
@@ -561,7 +866,7 @@
         "h": 7,
         "w": 24,
         "x": 0,
-        "y": 14
+        "y": 19
       },
       "id": 37,
       "links": [],
@@ -583,11 +888,15 @@
           }
         ]
       },
-      "pluginVersion": "9.0.0",
+      "pluginVersion": "9.0.7",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "37ehD1i4z"
+          },
           "exemplar": true,
-          "expr": "smartprom_temperature_celsius_raw",
+          "expr": "smartprom_temperature_celsius_raw{job=\"smartctl\"}",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -597,8 +906,12 @@
           "refId": "A"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "37ehD1i4z"
+          },
           "exemplar": true,
-          "expr": "smartprom_power_cycle_count_raw",
+          "expr": "smartprom_power_cycle_count_raw{job=\"smartctl\"}",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -608,8 +921,12 @@
           "refId": "B"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "37ehD1i4z"
+          },
           "exemplar": true,
-          "expr": "smartprom_power_on_hours_raw",
+          "expr": "smartprom_power_on_hours_raw{job=\"smartctl\"}",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -715,7 +1032,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "fmMKqssGk"
+        "uid": "37ehD1i4z"
       },
       "fieldConfig": {
         "defaults": {
@@ -756,8 +1073,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -773,7 +1089,7 @@
         "h": 11,
         "w": 24,
         "x": 0,
-        "y": 21
+        "y": 26
       },
       "id": 36,
       "links": [],
@@ -781,12 +1097,14 @@
         "legend": {
           "calcs": [
             "mean",
-            "lastNotNull",
             "max",
-            "min"
+            "min",
+            "lastNotNull"
           ],
           "displayMode": "table",
-          "placement": "bottom"
+          "placement": "bottom",
+          "sortBy": "Mean",
+          "sortDesc": true
         },
         "tooltip": {
           "mode": "multi",
@@ -802,7 +1120,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "smartprom_temperature_celsius_raw",
+          "expr": "smartprom_temperature_celsius_raw{job=\"smartctl\"}",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
@@ -815,7 +1133,7 @@
       "type": "timeseries"
     }
   ],
-  "refresh": "",
+  "refresh": false,
   "schemaVersion": 36,
   "style": "dark",
   "tags": [
@@ -854,8 +1172,8 @@
     ]
   },
   "timezone": "",
-  "title": "SMART Exporter",
+  "title": "SMART",
   "uid": "hmXXiWPnk",
-  "version": 10,
+  "version": 16,
   "weekStart": ""
 }

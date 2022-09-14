@@ -1,6 +1,5 @@
 # Prometheus S.M.A.R.T ctl metrics exporter
 
-![build](https://github.com/matusnovak/prometheus-smartctl/workflows/build/badge.svg)
 
 This is a simple exporter for the [Prometheus metrics](https://prometheus.io/) using [smartctl](https://www.smartmontools.org/). The script `smartprom.py` also comes with `smartprom.service` so that you can run this script in the background on your Linux OS via `systemctl`. The script will use port `9902`, you can change it by changing it directly in the script. This script exports all of the data available from the smartctl.
 
@@ -22,9 +21,7 @@ _Note: You don't have to do this if you use the Docker image._
 
 No extra configuration needed, should work out of the box. The `privileged: true` is required in order for `smartctl` to be able to access drives from the host.
 
-Docker image is here: <https://hub.docker.com/r/matusnovak/prometheus-smartctl>
-
-The architectures supported by this image are: linux/386, linux/amd64, linux/arm/v6, linux/arm/v7, linux/arm64/v8, linux/ppc64le, linux/s390x
+Docker image is here: <https://hub.docker.com/r/vaa12345/prometheus-smartctl>
 
 Example docker-compose.yml:
 
@@ -32,12 +29,14 @@ Example docker-compose.yml:
 version: '3'
 services:
   prometheus_smartctl-exporter:
-    image: vaa12345/prometheus-smartctl:latest
-    container_name: prometheus_smartctl-exporter
-    privileged: true
-    ports:
-      - "9902:9902"
-    restart: unless-stopped
+      image: vaa12345/prometheus-smartctl:latest
+      container_name: prometheus_smartctl-exporter
+      privileged: true
+      volumes:
+        - prometheus-smartctl_exporter:/etc/smartprom/
+      ports:
+        - 9902:9902
+      restart: always
 ```
 
 Your metrics will be available at <http://localhost:9902/metrics>
@@ -63,6 +62,8 @@ All configuration is done with environment variables.
 - `SMARTCTL_EXPORTER_PORT`: (Optional) The address the exporter should listen on. The default is `9902`.
 - `SMARTCTL_EXPORTER_ADDRESS`: (Optional) The address the exporter should listen on. The default is to listen on all addresses.
 
+For disks that are not specified in the config, metrics will not be collected. In some cases, smartctl determines disk type incorrectly (for example, if sata disk is connected to a disk shelf via an interposer). You can specify disk type via config directly. 
+
 Example smartprom.yml:
 
 ```yml
@@ -84,5 +85,5 @@ smartctl_exporter:
 
 There is a reference Grafana dashboard in [grafana/grafana_dashboard.json](./grafana/grafana_dashboard.json).
 
-![](./grafana/grafana_dashboard_1.png)
+![](./grafana/grafana3.png)
 ![](./grafana/grafana_dashboard_2.png)

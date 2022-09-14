@@ -138,26 +138,38 @@ def smart_scsi(dev: str) -> dict:
     Runs the smartctl command on a "scsi" device
     and processes its attributes
     """
-    results = run_smartctl_cmd(['smartctl', '-A', '-H', '-d', 'scsi', '--json=c', dev])
+    results = run_smartctl_cmd(['smartctl', '-a', '-d', 'scsi', '--json=c', dev])
     results = json.loads(results)
 
     attributes = {
         'smart_passed': get_smart_status(results)
     }
-    for key, value in results.items():
-        if type(value) == dict:
-            for _label, _value in value.items():
-                if type(_value) == int:
+    
+    # remove unnecessary data
+    del results['json_format_version']
+    del results['smartctl']
+    del results['local_time']
+
+    for key in results:
+    
+        if isinstance(results[key], dict):
+            for _label, _value in results[key].items():
+                if isinstance(_value, int):
                     attributes[f"{key}_{_label}"] = _value
-        elif type(value) == int:
-            attributes[key] = value
+                elif isinstance(_value, dict):
+                    for _label2, _value2 in _value.items():
+                        if isinstance(_value2, int):
+                            attributes[f"{key}_{_label}_{_label2}"] = _value2
+        elif isinstance(results[key], int):
+            attributes[key] = results[key]
+            
     return attributes
 
 
 def smart_megaraid(drive_id):
 
     dev, type = drive_id.split('_')
-    results = run_smartctl_cmd(['smartctl', '-A', '-H', '-d', type, '--json=c', dev])
+    results = run_smartctl_cmd(['smartctl', '-a', '-d', type, '--json=c', dev])
     results = yaml.load(results, Loader=yaml.Loader)
 
     attributes = {
@@ -175,6 +187,10 @@ def smart_megaraid(drive_id):
             for _label, _value in results[key].items():
                 if isinstance(_value, int):
                     attributes[f"{key}_{_label}"] = _value
+                elif isinstance(_value, dict):
+                    for _label2, _value2 in _value.items():
+                        if isinstance(_value2, int):
+                            attributes[f"{key}_{_label}_{_label2}"] = _value2
         elif isinstance(results[key], int):
             attributes[key] = results[key]
 

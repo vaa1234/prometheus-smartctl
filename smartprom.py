@@ -51,7 +51,7 @@ def get_device_info(dev: str, type: str) -> dict:
     results = run_smartctl_cmd(['smartctl', '-d', type, '-i', dev, '--json=c'])
     results = json.loads(results)
 
-    if type.startswith('megaraid'):
+    if type.startswith('megaraid') or type == 'scsi':
         results = {
             'model_name': results.get("scsi_model_name", "Unknown"),
             'serial_number': results.get("serial_number", "Unknown")
@@ -162,7 +162,12 @@ def smart_scsi(dev: str) -> dict:
                             attributes[f"{key}_{_label}_{_label2}"] = _value2
         elif isinstance(results[key], int):
             attributes[key] = results[key]
-            
+    
+    # rename some attributes for sata disk compatibility
+    attributes['temperature_celsius_raw'] = attributes.pop('temperature_current')
+    attributes['power_cycle_count_raw'] = attributes.pop('scsi_start_stop_cycle_counter_accumulated_start_stop_cycles')
+    attributes['power_on_hours_raw'] = attributes.pop('power_on_time_hours')
+    
     return attributes
 
 

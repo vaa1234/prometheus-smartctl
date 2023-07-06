@@ -1,4 +1,41 @@
 {
+  "__inputs": [
+    {
+      "name": "DS_PROMETHEUS",
+      "label": "Prometheus",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "prometheus",
+      "pluginName": "Prometheus"
+    }
+  ],
+  "__elements": {},
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "9.2.3"
+    },
+    {
+      "type": "datasource",
+      "id": "prometheus",
+      "name": "Prometheus",
+      "version": "1.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "table",
+      "name": "Table",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "timeseries",
+      "name": "Time series",
+      "version": ""
+    }
+  ],
   "annotations": {
     "list": [
       {
@@ -26,7 +63,7 @@
   "fiscalYearStartMonth": 0,
   "gnetId": 9846,
   "graphTooltip": 0,
-  "id": 20,
+  "id": null,
   "links": [
     {
       "icon": "external link",
@@ -41,7 +78,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "37ehD1i4z"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "",
       "fieldConfig": {
@@ -134,15 +171,16 @@
           }
         ]
       },
-      "pluginVersion": "9.0.7",
+      "pluginVersion": "9.2.3",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "fmMKqssGk"
+            "uid": "${DS_PROMETHEUS}"
           },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "smartprom_smart_passed{job=\"smartctl\"}",
+          "expr": "smartprom_smart_passed{}",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -202,6 +240,10 @@
                 "aggregations": [],
                 "operation": "groupby"
               },
+              "job": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
               "model_family": {
                 "aggregations": [],
                 "operation": "groupby"
@@ -215,6 +257,348 @@
                 "operation": "groupby"
               },
               "type": {
+                "aggregations": [],
+                "operation": "groupby"
+              }
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": false,
+              "backup_id": true,
+              "backup_type": true,
+              "client_hostname": false,
+              "client_id": true,
+              "client_os_version": true,
+              "client_username": true,
+              "client_version": true,
+              "instance": false,
+              "job": false,
+              "snapshot_id": true
+            },
+            "indexByName": {
+              "Value (last)": 6,
+              "drive": 2,
+              "instance": 1,
+              "job": 0,
+              "model_name": 3,
+              "serial_number": 4,
+              "type": 5
+            },
+            "renameByName": {
+              "Value": "",
+              "Value #A": "reallocated_sector_ct",
+              "Value #A (sum)": "reallocated_sector_ct",
+              "Value #B": "reported_uncorrect",
+              "Value #B (sum)": "reported_uncorrect",
+              "Value #C (sum)": "command_timeout",
+              "Value #D (sum)": "current_pending_sector",
+              "Value #E (sum)": "offline_uncorrectable",
+              "Value (last)": "health",
+              "job": ""
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "links": [],
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "celsius"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
+      "id": 36,
+      "links": [],
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max",
+            "min",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true,
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "8.5.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "smartprom_temperature_celsius_raw{}",
+          "format": "time_series",
+          "interval": "",
+          "intervalFactor": 2,
+          "legendFormat": "{{instance}} {{drive}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Temperature",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto",
+            "filterable": false,
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "#EAB839",
+                "value": 40
+              },
+              {
+                "color": "red",
+                "value": 45
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "temperature_celsius"
+            },
+            "properties": [
+              {
+                "id": "custom.displayMode",
+                "value": "color-background"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "power_on_hours"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "h"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 18
+      },
+      "id": 37,
+      "links": [],
+      "maxDataPoints": 100,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "frameIndex": 1,
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "instance"
+          }
+        ]
+      },
+      "pluginVersion": "9.2.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "smartprom_temperature_celsius_raw{}",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "smartprom_power_cycle_count_raw{}",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "smartprom_power_on_hours_raw{}",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "",
+          "refId": "C"
+        }
+      ],
+      "title": "Info Metrics",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "Value #A": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              },
+              "Value #B": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              },
+              "Value #C": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              },
+              "Value #D": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              },
+              "Value #E": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              },
+              "drive": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "instance": {
                 "aggregations": [],
                 "operation": "groupby"
               }
@@ -250,13 +634,12 @@
             "renameByName": {
               "Value": "",
               "Value #A": "reallocated_sector_ct",
-              "Value #A (sum)": "reallocated_sector_ct",
+              "Value #A (sum)": "temperature_celsius",
               "Value #B": "reported_uncorrect",
-              "Value #B (sum)": "reported_uncorrect",
-              "Value #C (sum)": "command_timeout",
+              "Value #B (sum)": "power_cycle_count",
+              "Value #C (sum)": "power_on_hours",
               "Value #D (sum)": "current_pending_sector",
               "Value #E (sum)": "offline_uncorrectable",
-              "Value (last)": "health",
               "job": ""
             }
           }
@@ -267,7 +650,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "37ehD1i4z"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "",
       "fieldConfig": {
@@ -286,8 +669,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "#EAB839",
@@ -380,7 +762,7 @@
         "h": 5,
         "w": 24,
         "x": 0,
-        "y": 7
+        "y": 25
       },
       "id": 27,
       "links": [],
@@ -402,15 +784,16 @@
           }
         ]
       },
-      "pluginVersion": "9.0.7",
+      "pluginVersion": "9.2.3",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "37ehD1i4z"
+            "uid": "${DS_PROMETHEUS}"
           },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "smartprom_scsi_grown_defect_list{job=\"smartctl\"}",
+          "expr": "smartprom_scsi_grown_defect_list{}",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -422,10 +805,11 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "37ehD1i4z"
+            "uid": "${DS_PROMETHEUS}"
           },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "smartprom_scsi_error_counter_log_read_total_uncorrected_errors{job=\"smartctl\"}",
+          "expr": "smartprom_scsi_error_counter_log_read_total_uncorrected_errors{}",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -437,10 +821,11 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "37ehD1i4z"
+            "uid": "${DS_PROMETHEUS}"
           },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "smartprom_scsi_error_counter_log_write_total_uncorrected_errors{job=\"smartctl\"}",
+          "expr": "smartprom_scsi_error_counter_log_write_total_uncorrected_errors{}",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -553,7 +938,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "37ehD1i4z"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "",
       "fieldConfig": {
@@ -572,8 +957,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "#EAB839",
@@ -606,7 +990,7 @@
         "h": 7,
         "w": 24,
         "x": 0,
-        "y": 12
+        "y": 30
       },
       "id": 39,
       "links": [],
@@ -628,15 +1012,16 @@
           }
         ]
       },
-      "pluginVersion": "9.0.7",
+      "pluginVersion": "9.2.3",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "37ehD1i4z"
+            "uid": "${DS_PROMETHEUS}"
           },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "smartprom_reallocated_sector_ct_raw{job=\"smartctl\"}",
+          "expr": "smartprom_reallocated_sector_ct_raw{}",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -648,10 +1033,11 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "37ehD1i4z"
+            "uid": "${DS_PROMETHEUS}"
           },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "smartprom_reported_uncorrect_raw{job=\"smartctl\"}",
+          "expr": "smartprom_reported_uncorrect_raw{}",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -663,10 +1049,11 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "37ehD1i4z"
+            "uid": "${DS_PROMETHEUS}"
           },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "smartprom_command_timeout_raw{job=\"smartctl\"}",
+          "expr": "smartprom_command_timeout_raw{}",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -678,10 +1065,11 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "37ehD1i4z"
+            "uid": "${DS_PROMETHEUS}"
           },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "smartprom_current_pending_sector_raw{job=\"smartctl\"}",
+          "expr": "smartprom_current_pending_sector_raw{}",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -693,10 +1081,11 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "37ehD1i4z"
+            "uid": "${DS_PROMETHEUS}"
           },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "smartprom_offline_uncorrectable_raw{job=\"smartctl\"}",
+          "expr": "smartprom_offline_uncorrectable_raw{}",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -798,343 +1187,10 @@
         }
       ],
       "type": "table"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "37ehD1i4z"
-      },
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {
-            "align": "auto",
-            "displayMode": "auto",
-            "filterable": false,
-            "inspect": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "#EAB839",
-                "value": 50
-              },
-              {
-                "color": "red",
-                "value": 60
-              }
-            ]
-          },
-          "unit": "none"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "temperature_celsius"
-            },
-            "properties": [
-              {
-                "id": "custom.displayMode",
-                "value": "color-background"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "power_on_hours"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "h"
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 24,
-        "x": 0,
-        "y": 19
-      },
-      "id": 37,
-      "links": [],
-      "maxDataPoints": 100,
-      "options": {
-        "footer": {
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
-        },
-        "frameIndex": 1,
-        "showHeader": true,
-        "sortBy": [
-          {
-            "desc": false,
-            "displayName": "instance"
-          }
-        ]
-      },
-      "pluginVersion": "9.0.7",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "37ehD1i4z"
-          },
-          "exemplar": true,
-          "expr": "smartprom_temperature_celsius_raw{job=\"smartctl\"}",
-          "format": "table",
-          "hide": false,
-          "instant": true,
-          "interval": "",
-          "intervalFactor": 1,
-          "legendFormat": "",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "37ehD1i4z"
-          },
-          "exemplar": true,
-          "expr": "smartprom_power_cycle_count_raw{job=\"smartctl\"}",
-          "format": "table",
-          "hide": false,
-          "instant": true,
-          "interval": "",
-          "intervalFactor": 1,
-          "legendFormat": "",
-          "refId": "B"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "37ehD1i4z"
-          },
-          "exemplar": true,
-          "expr": "smartprom_power_on_hours_raw{job=\"smartctl\"}",
-          "format": "table",
-          "hide": false,
-          "instant": true,
-          "interval": "",
-          "intervalFactor": 1,
-          "legendFormat": "",
-          "refId": "C"
-        }
-      ],
-      "title": "Info Metrics",
-      "transformations": [
-        {
-          "id": "merge",
-          "options": {}
-        },
-        {
-          "id": "groupBy",
-          "options": {
-            "fields": {
-              "Value #A": {
-                "aggregations": [
-                  "sum"
-                ],
-                "operation": "aggregate"
-              },
-              "Value #B": {
-                "aggregations": [
-                  "sum"
-                ],
-                "operation": "aggregate"
-              },
-              "Value #C": {
-                "aggregations": [
-                  "sum"
-                ],
-                "operation": "aggregate"
-              },
-              "Value #D": {
-                "aggregations": [
-                  "sum"
-                ],
-                "operation": "aggregate"
-              },
-              "Value #E": {
-                "aggregations": [
-                  "sum"
-                ],
-                "operation": "aggregate"
-              },
-              "drive": {
-                "aggregations": [],
-                "operation": "groupby"
-              },
-              "instance": {
-                "aggregations": [],
-                "operation": "groupby"
-              }
-            }
-          }
-        },
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "Time": true,
-              "__name__": false,
-              "backup_id": true,
-              "backup_type": true,
-              "client_hostname": false,
-              "client_id": true,
-              "client_os_version": true,
-              "client_username": true,
-              "client_version": true,
-              "instance": false,
-              "job": true,
-              "snapshot_id": true
-            },
-            "indexByName": {
-              "Time": 0,
-              "Value #A": 5,
-              "Value #B": 6,
-              "__name__": 1,
-              "drive": 3,
-              "instance": 2,
-              "job": 4
-            },
-            "renameByName": {
-              "Value": "",
-              "Value #A": "reallocated_sector_ct",
-              "Value #A (sum)": "temperature_celsius",
-              "Value #B": "reported_uncorrect",
-              "Value #B (sum)": "power_cycle_count",
-              "Value #C (sum)": "power_on_hours",
-              "Value #D (sum)": "current_pending_sector",
-              "Value #E (sum)": "offline_uncorrectable",
-              "job": ""
-            }
-          }
-        }
-      ],
-      "type": "table"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "37ehD1i4z"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "links": [],
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "celsius"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 11,
-        "w": 24,
-        "x": 0,
-        "y": 26
-      },
-      "id": 36,
-      "links": [],
-      "options": {
-        "legend": {
-          "calcs": [
-            "mean",
-            "max",
-            "min",
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "sortBy": "Mean",
-          "sortDesc": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "8.5.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "fmMKqssGk"
-          },
-          "editorMode": "code",
-          "exemplar": true,
-          "expr": "smartprom_temperature_celsius_raw{job=\"smartctl\"}",
-          "format": "time_series",
-          "interval": "",
-          "intervalFactor": 2,
-          "legendFormat": "{{instance}} {{drive}}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Temperature",
-      "type": "timeseries"
     }
   ],
   "refresh": false,
-  "schemaVersion": 36,
+  "schemaVersion": 37,
   "style": "dark",
   "tags": [
     "system"
@@ -1174,6 +1230,6 @@
   "timezone": "",
   "title": "SMART",
   "uid": "hmXXiWPnk",
-  "version": 16,
+  "version": 20,
   "weekStart": ""
 }

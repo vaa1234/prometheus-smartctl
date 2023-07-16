@@ -8,8 +8,7 @@ RUN apk add --no-cache smartmontools \
     && rm -rf /root/.cache/ \
     && find / -name '*.pyc' -delete
 
-RUN mkdir /etc/smartprom
-COPY ./smartprom.yaml /etc/smartprom/smartprom.yaml
+COPY ./storcli64 /opt/storcli64
 
 COPY ./smartprom.py /smartprom.py
 
@@ -17,4 +16,4 @@ EXPOSE 9902
 ENTRYPOINT ["/usr/local/bin/python", "-u", "/smartprom.py"]
 
 # HELP
-# docker build -t matusnovak/prometheus-smartctl:test .
+# docker build -t vaa12345/prometheus-smartctl:test .

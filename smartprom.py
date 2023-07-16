@@ -11,10 +11,8 @@ DATA = {}
 METRICS = {}
 LABELS = ['drive', 'type', 'model_name', 'serial_number']
 
-def run_smartctl_cmd(args: list):
-    """
-    Runs the smartctl command on the system
-    """
+def run_shell_cmd(args: list):
+    
     out = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     stdout, stderr = out.communicate()
 
@@ -25,6 +23,60 @@ def run_smartctl_cmd(args: list):
 
     return stdout.decode("utf-8")
 
+def check_sata(drive: str):
+
+    try:
+        run_shell_cmd(['smartctl', '-d', 'sat', '-A', drive, '--json=c'])
+        result = True
+    except: # if smartctrl return error with exception then this not sata drive
+        result = False
+
+    return result
+
+def get_megaraid_drive():
+
+    data = run_shell_cmd(['/opt/storcli64', '/c0/v0', 'show', 'all', 'J'])
+    data_json = json.loads(data)
+
+    result = {}
+
+    try:
+        megaraid_drive = data_json['Controllers'][0]['Response Data']['VD0 Properties']['OS Drive Name'] # megaraid drive name
+        result = megaraid_drive
+    except:
+        result = False
+
+    return result
+
+def scan_drives() -> list:
+    # if sata disks connected via disk shelf, smartctl will return scsi type for all disks
+    # we must identity right disk types
+
+    disks = [] # using list instead dict because disks connected via megaraid controller has same names but different disk types
+    result = run_shell_cmd(['smartctl', '--scan-open', '--json=c'])
+    result_json = json.loads(result)
+
+    if 'devices' in result_json:
+        devices = result_json['devices']
+
+        megaraid_diskname = get_megaraid_drive()
+
+        for device in devices:
+            
+            disk_name = device["name"]
+
+            if megaraid_diskname and disk_name == megaraid_diskname:
+                continue
+
+            if check_sata(disk_name):
+                disk_type = 'sat'
+            else:
+                disk_type = device["type"]
+
+            disks.append(disk_name + '_' + disk_type)
+    else:
+        print("No devices found. Make sure you have enough privileges.")
+    return disks
 
 def get_devices_data(devices):
 
@@ -32,14 +84,13 @@ def get_devices_data(devices):
 
     for device in devices:
 
-        disk_name, disk_type = list(device.items())[0]
+        disk_name, disk_type = device.split('_')
 
         disk_attrs = get_device_info(disk_name, disk_type)
         disk_attrs["name"] = disk_name
         disk_attrs["type"] = disk_type
 
-        disk_id = disk_name + '_' + disk_type
-        disks[disk_id] = disk_attrs
+        disks[device] = disk_attrs
     
     return disks
 
@@ -48,7 +99,7 @@ def get_device_info(dev: str, type: str) -> dict:
     """
     Returns a dictionary of device info
     """
-    results = run_smartctl_cmd(['smartctl', '-d', type, '-i', dev, '--json=c'])
+    results = run_shell_cmd(['smartctl', '-d', type, '-i', dev, '--json=c'])
     results = json.loads(results)
 
     if type.startswith('megaraid') or type == 'scsi':
@@ -79,7 +130,7 @@ def smart_sat(dev: str) -> dict:
     Runs the smartctl command on a "sat" device
     and processes its attributes
     """
-    results = run_smartctl_cmd(['smartctl', '-A', '-H', '-d', 'sat', '--json=c', dev])
+    results = run_shell_cmd(['smartctl', '-A', '-H', '-d', 'sat', '--json=c', dev])
     results = json.loads(results)
 
     attributes = {
@@ -117,19 +168,36 @@ def smart_nvme(dev: str) -> dict:
     Runs the smartctl command on a "nvme" device
     and processes its attributes
     """
-    results = run_smartctl_cmd(['smartctl', '-A', '-H', '-d', 'nvme', '--json=c', dev])
+    results = run_shell_cmd(['smartctl', '-A', '-H', '-d', 'nvme', '--json=c', dev])
     results = json.loads(results)
 
     attributes = {
         'smart_passed': get_smart_status(results)
     }
-    data = results['nvme_smart_health_information_log']
-    for key, value in data.items():
-        if key == 'temperature_sensors':
-            for i, _value in enumerate(value, start=1):
-                attributes[f'temperature_sensor{i}'] = _value
-        else:
-            attributes[key] = value
+
+    # remove unnecessary data
+    del results['json_format_version']
+    del results['smartctl']
+    del results['local_time']
+
+    for key in results:
+    
+        if isinstance(results[key], dict):
+            for _label, _value in results[key].items():
+                if isinstance(_value, int):
+                    attributes[f"{key}_{_label}"] = _value
+                elif isinstance(_value, dict):
+                    for _label2, _value2 in _value.items():
+                        if isinstance(_value2, int):
+                            attributes[f"{key}_{_label}_{_label2}"] = _value2
+        elif isinstance(results[key], int):
+            attributes[key] = results[key]
+
+    # rename some attributes for sata disk compatibility
+    attributes['temperature_celsius_raw'] = attributes.pop('temperature_current')
+    attributes['power_cycle_count_raw'] = attributes.pop('power_cycle_count')
+    attributes['power_on_hours_raw'] = attributes.pop('power_on_time_hours')
+
     return attributes
 
 
@@ -138,7 +206,7 @@ def smart_scsi(dev: str) -> dict:
     Runs the smartctl command on a "scsi" device
     and processes its attributes
     """
-    results = run_smartctl_cmd(['smartctl', '-a', '-d', 'scsi', '--json=c', dev])
+    results = run_shell_cmd(['smartctl', '-a', '-d', 'scsi', '--json=c', dev])
     results = json.loads(results)
 
     attributes = {
@@ -174,7 +242,7 @@ def smart_scsi(dev: str) -> dict:
 def smart_megaraid(drive_id):
 
     dev, type = drive_id.split('_')
-    results = run_smartctl_cmd(['smartctl', '-a', '-d', type, '--json=c', dev])
+    results = run_shell_cmd(['smartctl', '-a', '-d', type, '--json=c', dev])
     results = yaml.load(results, Loader=yaml.Loader)
 
     attributes = {
@@ -216,7 +284,7 @@ def collect():
     for drive_id, drive_attrs in DATA.items():
 
         typ = drive_attrs['type']
-        
+
         if typ == 'sat':
             attrs = smart_sat(drive_attrs['name'])
         elif typ == 'nvme':
@@ -231,8 +299,7 @@ def collect():
         try:
             for key, values in attrs.items():
                 # Metric name in lower case
-                metric = 'smartprom_' + key.replace('-', '_').replace(' ', '_').replace('.', '').replace('/', '_') \
-                    .lower()
+                metric = 'smartprom_' + key.replace('-', '_').replace(' ', '_').replace('.', '').replace('/', '_').lower()
 
                 # Create metric if it does not exist
                 if metric not in METRICS:
@@ -246,7 +313,6 @@ def collect():
 
                 METRICS[metric].labels(drive=drive_id,
                                     type=typ,
-                                    #    model_family=drive_attrs['model_family'],
                                     model_name=drive_attrs['model_name'],
                                     serial_number=drive_attrs['serial_number']).set(metric_val)
 
@@ -266,18 +332,8 @@ def main():
     exporter_address = os.environ.get("SMARTCTL_EXPORTER_ADDRESS", "0.0.0.0")
     exporter_port = int(os.environ.get("SMARTCTL_EXPORTER_PORT", 9902))
     refresh_interval = int(os.environ.get("SMARTCTL_REFRESH_INTERVAL", 60))
-    config_file = os.environ.get("SMARTCTL_CONFIG_FILE", "/etc/smartprom/smartprom.yaml")
 
-    if not os.path.isfile(config_file):
-        err_msg = f'{config_file} not exist'
-        print(err_msg)
-        raise OSError(err_msg)
-
-    # parse config
-    with open(config_file) as f:
-        config = yaml.safe_load(f)
-        devices = config['smartctl_exporter']['devices']
-
+    devices = scan_drives()
     DATA = get_devices_data(devices)
 
     # Start Prometheus server

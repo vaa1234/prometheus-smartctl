@@ -16,19 +16,17 @@ def run_shell_cmd(args: list):
     out = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     stdout, stderr = out.communicate()
 
-    if out.returncode != 0:
-        stdout_msg = stdout.decode('utf-8') if stdout is not None else ''
-        stderr_msg = stderr.decode('utf-8') if stderr is not None else ''
-        raise Exception(f"Command returned code {out.returncode}. Stdout: '{stdout_msg}' Stderr: '{stderr_msg}'")
-
     return stdout.decode("utf-8")
 
 def check_sata(drive: str):
 
     try:
-        run_shell_cmd(['smartctl', '-d', 'sat', '-A', drive, '--json=c'])
-        result = True
-    except: # if smartctrl return error with exception then this not sata drive
+        data = run_shell_cmd(['smartctl', '-d', 'sat', '-A', drive, '--json=c'])
+        data_json = json.loads(data)
+
+        if data_json['ata_smart_attributes']['table']:
+            result = True
+    except:
         result = False
 
     return result

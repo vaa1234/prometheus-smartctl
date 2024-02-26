@@ -18,6 +18,16 @@ def run_shell_cmd(args: list):
 
     return stdout.decode("utf-8")
 
+def check_available(drive: str):
+
+    data = run_shell_cmd(['smartctl', '-H', drive, '--json=c'])
+    data_json = json.loads(data)
+    
+    if data_json['smartctl']['exit_status'] == 0:
+        return True
+    else:
+        return False
+
 def check_sata(drive: str):
 
     try:
@@ -63,15 +73,17 @@ def scan_drives() -> list:
             
             disk_name = device["name"]
 
-            if megaraid_diskname and disk_name == megaraid_diskname:
-                continue
+            if check_available(disk_name):
 
-            if check_sata(disk_name):
-                disk_type = 'sat'
-            else:
-                disk_type = device["type"]
+                if megaraid_diskname and disk_name == megaraid_diskname:
+                    continue
 
-            disks.append(disk_name + '_' + disk_type)
+                if check_sata(disk_name):
+                    disk_type = 'sat'
+                else:
+                    disk_type = device["type"]
+
+                disks.append(disk_name + '_' + disk_type)
     else:
         print("No devices found. Make sure you have enough privileges.")
     return disks

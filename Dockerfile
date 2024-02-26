@@ -1,8 +1,8 @@
-FROM python:3.10-alpine3.16
+FROM python:3.10-alpine3.19
 
 WORKDIR /usr/src
-
-RUN apk add --no-cache smartmontools-7.4 \
+RUN apk update
+RUN apk add smartmontools \
     && pip install prometheus_client PyYAML \
     # remove temporary files
     && rm -rf /root/.cache/ \
